@@ -1,129 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:background="#667eea">
 
-    <LinearLayout
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:background="#FFFFFF">
 
-        <!-- Display -->
-        <LinearLayout
-            android:layout_width="match_parent"
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="#f7f9fc"
-            android:orientation="vertical"
-            android:padding="16dp"
-            android:layout_marginBottom="16dp"
-            android:minHeight="120dp">
+            android:text="科学计算器"/>
 
-            <TextView
-                android:id="@+id/previousDisplay"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="end"
-                android:textSize="18sp"
-                android:textColor="#888888"
-                android:minHeight="24dp"/>
-
-            <TextView
-                android:id="@+id/display"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="end"
-                android:text="0"
-                android:textSize="40sp"
-                android:textColor="#333333"
-                android:textStyle="bold"/>
-        </LinearLayout>
-
-        <!-- Scientific Functions Row 1 -->
-        <LinearLayout
-            android:layout_width="match_parent"
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:text="换算计算器"/>
+    </com.google.android.material.tabs.TabLayout>
 
-            <Button android:id="@+id/btnSin" android:text="sin" style="@style/FunctionButton"/>
-            <Button android:id="@+id/btnCos" android:text="cos" style="@style/FunctionButton"/>
-            <Button android:id="@+id/btnTan" android:text="tan" style="@style/FunctionButton"/>
-            <Button android:id="@+id/btnLog" android:text="log" style="@style/FunctionButton"/>
-            <Button android:id="@+id/btnLn" android:text="ln" style="@style/FunctionButton"/>
-        </LinearLayout>
-
-        <!-- Scientific Functions Row 2 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Button android:id="@+id/btnSqrt" android:text="√" style="@style/FunctionButton"/>
-            <Button android:id="@+id/btnSquare" android:text="x²" style="@style/FunctionButton"/>
-            <Button android:id="@+id/btnPower" android:text="xʸ" style="@style/FunctionButton"/>
-            <Button android:id="@+id/btnPi" android:text="π" style="@style/FunctionButton"/>
-            <Button android:id="@+id/btnE" android:text="e" style="@style/FunctionButton"/>
-        </LinearLayout>
-
-        <!-- Control Row -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Button android:id="@+id/btnClear" android:text="AC" style="@style/ClearButton"/>
-            <Button android:id="@+id/btnDelete" android:text="⌫" style="@style/DeleteButton"/>
-            <Button android:id="@+id/btnPercent" android:text="%" style="@style/OperatorButton"/>
-            <Button android:id="@+id/btnDivide" android:text="÷" style="@style/OperatorButton"/>
-        </LinearLayout>
-
-        <!-- Number Row 7-9 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Button android:id="@+id/btn7" android:text="7" style="@style/NumberButton"/>
-            <Button android:id="@+id/btn8" android:text="8" style="@style/NumberButton"/>
-            <Button android:id="@+id/btn9" android:text="9" style="@style/NumberButton"/>
-            <Button android:id="@+id/btnMultiply" android:text="×" style="@style/OperatorButton"/>
-        </LinearLayout>
-
-        <!-- Number Row 4-6 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Button android:id="@+id/btn4" android:text="4" style="@style/NumberButton"/>
-            <Button android:id="@+id/btn5" android:text="5" style="@style/NumberButton"/>
-            <Button android:id="@+id/btn6" android:text="6" style="@style/NumberButton"/>
-            <Button android:id="@+id/btnSubtract" android:text="−" style="@style/OperatorButton"/>
-        </LinearLayout>
-
-        <!-- Number Row 1-3 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Button android:id="@+id/btn1" android:text="1" style="@style/NumberButton"/>
-            <Button android:id="@+id/btn2" android:text="2" style="@style/NumberButton"/>
-            <Button android:id="@+id/btn3" android:text="3" style="@style/NumberButton"/>
-            <Button android:id="@+id/btnAdd" android:text="+" style="@style/OperatorButton"/>
-        </LinearLayout>
-
-        <!-- Bottom Row -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Button android:id="@+id/btn0" android:text="0" style="@style/NumberButton"/>
-            <Button android:id="@+id/btnDot" android:text="." style="@style/NumberButton"/>
-            <Button android:id="@+id/btnEquals" android:text="=" style="@style/EqualButton"/>
-        </LinearLayout>
-
-    </LinearLayout>
-</ScrollView>
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+</LinearLayout>
