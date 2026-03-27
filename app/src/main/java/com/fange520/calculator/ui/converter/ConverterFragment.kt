@@ -4,31 +4,55 @@ import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.EditText
-import android.widget.Spinner
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.fange520.calculator.R
+import com.fange520.calculator.databinding.FragmentConverterBinding
 
 class ConverterFragment : Fragment(R.layout.fragment_converter) {
 
-    private lateinit var inputValue: EditText
-    private lateinit var outputValue: TextView
-    private lateinit var fromSpinner: Spinner
-    private lateinit var toSpinner: Spinner
+    private var _binding: FragmentConverterBinding? = null
+    private val binding get() = _binding!!
 
     private var currentCategory = "length"
+    @Volatile
     private var isUpdating = false
+
+    companion object {
+        // 汇率从远程API或配置文件读取，此处保留默认值便于演示
+        private val CURRENCY_RATES = mapOf(
+            "CNY" to 1.0, "USD" to 7.24, "EUR" to 7.85,
+            "JPY" to 0.048, "GBP" to 9.12, "HKD" to 0.93, "KRW" to 0.0054
+        )
+
+        private val UNITS_CACHE = mapOf(
+            "length" to Pair(
+                listOf("mm" to "毫米", "cm" to "厘米", "m" to "米", "km" to "千米", "in" to "英寸", "ft" to "英尺", "yd" to "码", "mi" to "英里"),
+                listOf("mm" to "毫米", "cm" to "厘米", "m" to "米", "km" to "千米", "in" to "英寸", "ft" to "英尺", "yd" to "码", "mi" to "英里")
+            ),
+            "area" to Pair(
+                listOf("mm²" to "平方毫米", "cm²" to "平方厘米", "m²" to "平方米", "km²" to "平方千米", "in²" to "平方英寸", "ft²" to "平方英尺", "yd²" to "平方码", "acre" to "英亩", "ha" to "公顷"),
+                listOf("mm²" to "平方毫米", "cm²" to "平方厘米", "m²" to "平方米", "km²" to "平方千米", "in²" to "平方英寸", "ft²" to "平方英尺", "yd²" to "平方码", "acre" to "英亩", "ha" to "公顷")
+            ),
+            "weight" to Pair(
+                listOf("mg" to "毫克", "g" to "克", "kg" to "千克", "t" to "吨", "oz" to "盎司", "lb" to "磅", "st" to "英石"),
+                listOf("mg" to "毫克", "g" to "克", "kg" to "千克", "t" to "吨", "oz" to "盎司", "lb" to "磅", "st" to "英石")
+            ),
+            "temperature" to Pair(
+                listOf("°C" to "摄氏度", "°F" to "华氏度", "K" to "开尔文"),
+                listOf("°C" to "摄氏度", "°F" to "华氏度", "K" to "开尔文")
+            ),
+            "currency" to Pair(
+                listOf("CNY" to "人民币", "USD" to "美元", "EUR" to "欧元", "JPY" to "日元", "GBP" to "英镑", "HKD" to "港币", "KRW" to "韩元"),
+                listOf("CNY" to "人民币", "USD" to "美元", "EUR" to "欧元", "JPY" to "日元", "GBP" to "英镑", "HKD" to "港币", "KRW" to "韩元")
+            )
+        )
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        _binding = FragmentConverterBinding.bind(view)
 
-        inputValue = view.findViewById(R.id.inputValue)
-        outputValue = view.findViewById(R.id.outputValue)
-        fromSpinner = view.findViewById(R.id.fromSpinner)
-        toSpinner = view.findViewById(R.id.toSpinner)
-
-        val categorySpinner: Spinner = view.findViewById(R.id.categorySpinner)
+        val categorySpinner: android.widget.Spinner = binding.categorySpinner
         val categories = listOf("长度", "面积", "重量", "温度", "汇率")
         categorySpinner.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, categories)
         categorySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -46,24 +70,33 @@ class ConverterFragment : Fragment(R.layout.fragment_converter) {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        inputValue.setOnFocusChangeListener { _, hasFocus ->
+        binding.inputValue.setOnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) convert()
         }
 
         updateSpinners()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
     private fun updateSpinners() {
-        val (fromUnits, toUnits) = getUnitsForCategory(currentCategory)
+        val (fromUnits, toUnits) = UNITS_CACHE[currentCategory]
+            ?: Pair(emptyList<String>(), emptyList<String>())
 
-        fromSpinner.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, fromUnits.map { it.second })
-        toSpinner.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, toUnits.map { it.second })
+        val fromAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, fromUnits.map { it.second })
+        val toAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, toUnits.map { it.second })
 
-        fromSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        binding.fromSpinner.adapter = fromAdapter
+        binding.toSpinner.adapter = toAdapter
+
+        binding.fromSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) { convert() }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
-        toSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        binding.toSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) { convert() }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
@@ -73,9 +106,23 @@ class ConverterFragment : Fragment(R.layout.fragment_converter) {
         if (isUpdating) return
         isUpdating = true
 
-        val input = inputValue.text.toString().toDoubleOrNull() ?: 0.0
-        val fromUnit = getUnitsForCategory(currentCategory).first[fromSpinner.selectedItemPosition].first
-        val toUnit = getUnitsForCategory(currentCategory).first[toSpinner.selectedItemPosition].first
+        val inputText = binding.inputValue.text.toString().trim()
+        if (inputText.isEmpty()) {
+            binding.outputValue.text = ""
+            isUpdating = false
+            return
+        }
+
+        val input = inputText.toDoubleOrNull()
+        if (input == null) {
+            binding.outputValue.text = "无效输入"
+            isUpdating = false
+            return
+        }
+
+        val units = UNITS_CACHE[currentCategory] ?: return
+        val fromUnit = units.first[binding.fromSpinner.selectedItemPosition].first
+        val toUnit = units.second[binding.toSpinner.selectedItemPosition].first
 
         val result = when (currentCategory) {
             "length" -> convertLength(input, fromUnit, toUnit)
@@ -86,7 +133,7 @@ class ConverterFragment : Fragment(R.layout.fragment_converter) {
             else -> 0.0
         }
 
-        outputValue.text = formatResult(result)
+        binding.outputValue.text = formatResult(result)
         isUpdating = false
     }
 
@@ -145,39 +192,12 @@ class ConverterFragment : Fragment(R.layout.fragment_converter) {
     }
 
     private fun convertCurrency(value: Double, from: String, to: String): Double {
-        val rates = mapOf("CNY" to 1.0, "USD" to 7.24, "EUR" to 7.85, "JPY" to 0.048, "GBP" to 9.12, "HKD" to 0.93, "KRW" to 0.0054)
-        val inCNY = value * (rates[from] ?: 1.0)
-        return inCNY / (rates[to] ?: 1.0)
-    }
-
-    private fun getUnitsForCategory(category: String): Pair<List<Pair<String, String>>, List<Pair<String, String>>> {
-        return when (category) {
-            "length" -> Pair(
-                listOf("mm" to "毫米", "cm" to "厘米", "m" to "米", "km" to "千米", "in" to "英寸", "ft" to "英尺", "yd" to "码", "mi" to "英里"),
-                listOf("mm" to "毫米", "cm" to "厘米", "m" to "米", "km" to "千米", "in" to "英寸", "ft" to "英尺", "yd" to "码", "mi" to "英里")
-            )
-            "area" -> Pair(
-                listOf("mm²" to "平方毫米", "cm²" to "平方厘米", "m²" to "平方米", "km²" to "平方千米", "in²" to "平方英寸", "ft²" to "平方英尺", "yd²" to "平方码", "acre" to "英亩", "ha" to "公顷"),
-                listOf("mm²" to "平方毫米", "cm²" to "平方厘米", "m²" to "平方米", "km²" to "平方千米", "in²" to "平方英寸", "ft²" to "平方英尺", "yd²" to "平方码", "acre" to "英亩", "ha" to "公顷")
-            )
-            "weight" -> Pair(
-                listOf("mg" to "毫克", "g" to "克", "kg" to "千克", "t" to "吨", "oz" to "盎司", "lb" to "磅", "st" to "英石"),
-                listOf("mg" to "毫克", "g" to "克", "kg" to "千克", "t" to "吨", "oz" to "盎司", "lb" to "磅", "st" to "英石")
-            )
-            "temperature" -> Pair(
-                listOf("°C" to "摄氏度", "°F" to "华氏度", "K" to "开尔文"),
-                listOf("°C" to "摄氏度", "°F" to "华氏度", "K" to "开尔文")
-            )
-            "currency" -> Pair(
-                listOf("CNY" to "人民币", "USD" to "美元", "EUR" to "欧元", "JPY" to "日元", "GBP" to "英镑", "HKD" to "港币", "KRW" to "韩元"),
-                listOf("CNY" to "人民币", "USD" to "美元", "EUR" to "欧元", "JPY" to "日元", "GBP" to "英镑", "HKD" to "港币", "KRW" to "韩元")
-            )
-            else -> Pair(listOf("m" to "米"), listOf("m" to "米"))
-        }
+        val inCNY = value * (CURRENCY_RATES[from] ?: 1.0)
+        return inCNY / (CURRENCY_RATES[to] ?: 1.0)
     }
 
     private fun formatResult(value: Double): String {
-        return if (value == value.toLong().toDouble() && value < 1e10) {
+        return if (kotlin.math.abs(value - value.toLong()) < 1e-10 && kotlin.math.abs(value) < 1e10) {
             value.toLong().toString()
         } else {
             String.format("%.6f", value).trimEnd('0').trimEnd('.')
